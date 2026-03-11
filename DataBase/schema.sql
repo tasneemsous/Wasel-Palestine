@@ -1,0 +1,115 @@
+```sql
+CREATE DATABASE IF NOT EXISTS sql12819671;
+USE sql12819671;
+
+-- USERS
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  role VARCHAR(20) DEFAULT 'CITIZEN',
+  reputation_score INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CHECKPOINTS
+CREATE TABLE checkpoints (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  location_lat DECIMAL(9,6) NOT NULL,
+  location_long DECIMAL(9,6) NOT NULL,
+  description TEXT,
+  is_active TINYINT(1) DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- REPORTS
+CREATE TABLE reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  reporter_id INT,
+  category ENUM('CLOSURE','DELAY','ACCIDENT','WEATHER_HAZARD','OTHER') NOT NULL,
+  description TEXT,
+  location_lat DECIMAL(9,6) NOT NULL,
+  location_long DECIMAL(9,6) NOT NULL,
+  status ENUM('PENDING','VERIFIED','REJECTED','DUPLICATE') DEFAULT 'PENDING',
+  confidence_score INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (reporter_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- INCIDENTS
+CREATE TABLE incidents (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  type ENUM('CLOSURE','DELAY','ACCIDENT','WEATHER_HAZARD','OTHER') NOT NULL,
+  severity ENUM('LOW','MEDIUM','HIGH','CRITICAL') NOT NULL,
+  description TEXT,
+  location_lat DECIMAL(9,6) NOT NULL,
+  location_long DECIMAL(9,6) NOT NULL,
+  verified_by INT,
+  is_active TINYINT(1) DEFAULT 1,
+  starts_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  ends_at DATETIME,
+  source_report_id INT,
+  FOREIGN KEY (verified_by) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (source_report_id) REFERENCES reports(id) ON DELETE SET NULL
+);
+
+-- REPORT VOTES
+CREATE TABLE report_votes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  report_id INT NOT NULL,
+  user_id INT NOT NULL,
+  vote_type TINYINT,
+  UNIQUE(report_id, user_id),
+  FOREIGN KEY (report_id) REFERENCES reports(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- SUBSCRIPTIONS
+CREATE TABLE subscriptions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  area_name VARCHAR(100),
+  center_lat DECIMAL(9,6),
+  center_long DECIMAL(9,6),
+  radius_km DECIMAL(5,2),
+  category_preference ENUM('CLOSURE','DELAY','ACCIDENT','WEATHER_HAZARD','OTHER'),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- REFRESH TOKENS
+CREATE TABLE refresh_tokens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT,
+  token VARCHAR(255) NOT NULL UNIQUE,
+  expiry_date DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- AUDIT LOGS
+CREATE TABLE audit_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  action_type VARCHAR(50) NOT NULL,
+  performed_by INT,
+  entity_name VARCHAR(50),
+  entity_id INT,
+  action_details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (performed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- CHECKPOINT STATUS HISTORY
+CREATE TABLE checkpoint_status_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  checkpoint_id INT NOT NULL,
+  status VARCHAR(50) NOT NULL,
+  reason TEXT,
+  changed_by INT,
+  changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (checkpoint_id) REFERENCES checkpoints(id) ON DELETE CASCADE,
+  FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
