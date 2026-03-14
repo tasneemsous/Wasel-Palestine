@@ -30,4 +30,8 @@ services:
       - db
 
 volumes:
+<<<<<<< HEAD
   postgres_data:
+=======
+  postgres_data:
+>>>>>>> d17cab2 (feat: setup docker with nestjs and postgres connection)
