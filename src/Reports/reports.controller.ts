@@ -2,11 +2,15 @@ import { Controller, Get, Post, Body, Param, Request, UseGuards } from '@nestjs/
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './create-report.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { IncidentsService } from '../incidents/incidents.service';
 
 @UseGuards(JwtAuthGuard)
 @Controller('reports')
 export class ReportsController {
-  constructor(private reportsService: ReportsService) {}
+  constructor(
+    private reportsService: ReportsService,
+    private incidentsService: IncidentsService,
+  ) {}
 
   @Post()
   create(@Body() dto: CreateReportDto, @Request() req) {
@@ -16,6 +20,11 @@ export class ReportsController {
   @Get()
   findAll() {
     return this.reportsService.findAll();
+  }
+
+  @Get(':id/incidents')
+  findLinkedIncidents(@Param('id') id: string) {
+    return this.incidentsService.findBySourceReportId(Number(id));
   }
 
   @Get(':id')

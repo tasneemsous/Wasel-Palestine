@@ -3,14 +3,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { ReportsModule } from './Reports/reports.module'; // 🔥 إضافة ReportsModule
+import { ReportsModule } from './Reports/reports.module';
+import { IncidentsModule } from './incidents/incidents.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST || 'localhost',
-      port: 5432,
+      port: Number(process.env.DB_PORT) || 5432,
       username: process.env.DB_USER || 'tasneem_admin',
       password: process.env.DB_PASSWORD || 'tasneem1234',
       database: process.env.DB_NAME || 'wasel_database',
@@ -22,7 +23,8 @@ import { ReportsModule } from './Reports/reports.module'; // 🔥 إضافة Rep
 
     AuthModule,
     UsersModule,
-    ReportsModule, // 🔥 تم إضافة ReportsModule
+    ReportsModule,
+    IncidentsModule,
   ],
 })
 export class AppModule {}
