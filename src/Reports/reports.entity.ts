@@ -50,8 +50,8 @@ export class Report {
   @Column({ type: 'enum', enum: ReportStatus, default: ReportStatus.PENDING })
   status: ReportStatus;
 
- @Column({ name: 'confidence_score', default: 0 })
-confidenceScore: number;
+  @Column({ name: 'confidence_score', default: 0 })
+  confidenceScore: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
